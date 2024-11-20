@@ -1,0 +1,44 @@
+stages:
+  - test
+  - coverage
+  - lint
+
+variables:
+  PYTHON_VERSION: "3.9"
+
+default:
+  tags:
+    - dev
+
+
+test:
+  stage: test
+  image: python:$PYTHON_VERSION
+  script:
+    - pip install -r requirements.txt
+    - export PYTHONPATH=$PYTHONPATH:$(pwd)
+    - pytest
+
+coverage:
+  stage: coverage
+  image: python:$PYTHON_VERSION
+  script:
+    - pip install -r requirements.txt
+    - pip install pytest coverage pytest-cov
+    - export PYTHONPATH=$PYTHONPATH:$(pwd)
+    - pytest --cov=uav_control --cov-report=xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  coverage: '/TOTAL.*\s+(\d+\%)$/'
+
+lint:
+  stage: lint
+  image: python:$PYTHON_VERSION
+  script:
+    - pip install -r requirements.txt
+    - pip install pylint
+    - pylint uav_control2.py
+

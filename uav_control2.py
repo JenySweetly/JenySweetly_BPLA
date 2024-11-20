@@ -132,34 +132,47 @@ class UAVControl:
         """
         try:
             msg = self.master.recv_match(
-                type=['GLOBAL_POSITION_INT', 'ATTITUDE'], blocking=True, timeout=5)
+                type=['GLOBAL_POSITION_INT', 'ATTITUDE',
+                      'VFR_HUD', 'SYS_STATUS'],
+                blocking=True,
+                timeout=5
+            )
             if msg:
                 telemetry = {}
-                if msg.get_type() == 'GLOBAL_POSITION_INT':
+                msg_type = msg.get_type()
+                if msg_type == 'GLOBAL_POSITION_INT':
                     telemetry['lat'] = msg.lat / 1e7
                     telemetry['lon'] = msg.lon / 1e7
                     telemetry['alt'] = msg.alt / 1000
                     # Проверка диапазонов значений
-                    assert - \
-                        90.0 <= telemetry['lat'] <= 90.0, "Некорректная широта"
-                    assert - \
-                        180.0 <= telemetry['lon'] <= 180.0, "Некорректная долгота"
-                elif msg.get_type() == 'ATTITUDE':
+                    if not -90.0 <= telemetry['lat'] <= 90.0:
+                        raise ValueError("Некорректная широта")
+                    if not -180.0 <= telemetry['lon'] <= 180.0:
+                        raise ValueError("Некорректная долгота")
+                elif msg_type == 'ATTITUDE':
                     telemetry['roll'] = msg.roll
                     telemetry['pitch'] = msg.pitch
                     telemetry['yaw'] = msg.yaw
                     # Проверка диапазонов углов
-                    assert - \
-                        math.pi <= telemetry['roll'] <= math.pi, "Некорректный крен"
-                    assert -math.pi / \
-                        2 <= telemetry['pitch'] <= math.pi / \
-                        2, "Некорректный тангаж"
-                    assert - \
-                        math.pi <= telemetry['yaw'] <= math.pi, "Некорректное рыскание"
+                    if not -math.pi <= telemetry['roll'] <= math.pi:
+                        raise ValueError("Некорректный крен")
+                    if not -math.pi / 2 <= telemetry['pitch'] <= math.pi / 2:
+                        raise ValueError("Некорректный тангаж")
+                    if not -math.pi <= telemetry['yaw'] <= math.pi:
+                        raise ValueError("Некорректное рыскание")
+                elif msg_type == 'VFR_HUD':
+                    telemetry['groundspeed'] = msg.groundspeed
+                    telemetry['airspeed'] = msg.airspeed
+                    telemetry['heading'] = msg.heading
+                elif msg_type == 'SYS_STATUS':
+                    # В вольтах
+                    telemetry['battery_voltage'] = msg.voltage_battery / 1000
+                    # В процентах
+                    telemetry['battery_remaining'] = msg.battery_remaining
                 return telemetry
             logger.warning("Телеметрия недоступна")
             return None
-        except AssertionError as e:
+        except ValueError as e:
             logger.error("Ошибка в телеметрии: %s", e)
             return None
         except Exception as e:

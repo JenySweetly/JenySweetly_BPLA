@@ -1,6 +1,8 @@
 # tests/test_uav_control.py
 
+import unittest
 import pytest
+import logging
 from unittest.mock import MagicMock, patch
 from uav_control2 import UAVControl
 from pymavlink import mavutil
