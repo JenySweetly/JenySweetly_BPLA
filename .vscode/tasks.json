@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Запуск тестов",
+            "type": "shell",
+            "command": "python -m unittest discover -s . -p '*_test.py'",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$pythonUnittest"
+            ]
+        }
+    ]
+}

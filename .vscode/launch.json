@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Отладка Python с LLDB",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/drone_accelerometer.py", // Необходимо указать имя тестируемого файла
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
